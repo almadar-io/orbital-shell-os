@@ -1,0 +1,58 @@
+app echo-console [
+  version: "1.0.0",
+  dev: { "mmio:0x09000000+0x1000": [read, write], "irq:33": [wait, ack] },
+  description: "The Orbital OS end-to-end fixture: a prompt on the serial line that echoes each received byte, then ok and a new prompt."
+]
+uses Serial from "std/behaviors/std-os-serial"
+
+orbital EchoConsoleOrbital {
+  entity ConsoleSession [runtime] {
+    id : string!
+  }
+
+  trait SerialLine = Serial.traits.SerialPort {
+    listens {
+      Console.CONSOLE_START -> SERIAL_START
+      Console.CONSOLE_WRITE -> WRITE_BYTES
+    }
+  }
+
+  trait Console -> ConsoleSession [optimistic] {
+    initial: idle
+
+    state idle {
+      INIT -> ready
+        (emit CONSOLE_START {})
+        (emit CONSOLE_WRITE { data: (bytes/from-string "> ") })
+    }
+
+    state ready {
+      INIT -> ready
+      CONSOLE_INPUT -> ready
+        (emit CONSOLE_WRITE { data: (bytes/concat [@payload.data (bytes/from-string "\nok\n> ")]) })
+      CONSOLE_FAILED -> stopped
+    }
+
+    state stopped {
+      INIT -> stopped
+    }
+
+    emits {
+      CONSOLE_START -> external {}
+        @description "Start the serial line."
+      CONSOLE_WRITE -> external { data : bytes! }
+        @description "Bytes to write on the serial line."
+    }
+
+    listens {
+      CONSOLE_INPUT { data : bytes! }
+        @description "One byte received on the serial line."
+      CONSOLE_FAILED { error : string! }
+        @description "The serial line stopped."
+      SerialLine.INPUT_BYTES -> CONSOLE_INPUT
+      SerialLine.SERIAL_ERROR -> CONSOLE_FAILED
+    }
+  }
+
+  page boot as EchoConsole -> Console, SerialLine
+}

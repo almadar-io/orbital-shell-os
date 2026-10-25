@@ -1,0 +1,20 @@
+[package]
+name = "orbital-os-root-task"
+version = "0.1.0"
+edition = "2021"
+license = "BUSL-1.1"
+description = "The seL4 root task of an Orbital OS image: the orbital-core kernel running one program, answering its asks"
+
+[workspace]
+
+[dependencies]
+sel4 = { git = "https://github.com/seL4/rust-sel4", tag = "v5.0.0" }
+sel4-root-task = { git = "https://github.com/seL4/rust-sel4", tag = "v5.0.0" }
+orbital-core-base = { git = "https://github.com/almadar-io/orbital-core", branch = "main", default-features = false }
+orbital-core-eval = { git = "https://github.com/almadar-io/orbital-core", branch = "main", default-features = false }
+orbital-core-runtime = { git = "https://github.com/almadar-io/orbital-core", branch = "main", default-features = false }
+serde_json = { version = "1.0.154", default-features = false, features = ["alloc", "preserve_order"] }
+
+[profile.release]
+opt-level = 2
+debug = false

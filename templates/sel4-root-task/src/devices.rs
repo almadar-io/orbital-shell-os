@@ -102,7 +102,7 @@ impl Devices {
 
     /// Answer one `os/` ask: the device operators against `grants`, anything else is not this host's.
     pub fn answer(&self, grants: &OsGrants, request: &IoRequest) -> IoAnswer {
-        let IoRequest::Os { op, args, key, site } = request else {
+        let IoRequest::Os { op, args, key, site, .. } = request else {
             return IoAnswer::Os(Err(OsError::new(OsErrorKind::Invalid, "not an os request")));
         };
         let answered = match op {

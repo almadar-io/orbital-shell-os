@@ -145,7 +145,9 @@ impl Devices {
                     _ => return Err(OsError::new(OsErrorKind::Invalid, alloc::format!("{name}: width {width} is not 1, 2, 4 or 8"))),
                 }
             };
-            Ok(record([("value", Value::Number(value as f64))]))
+            i64::try_from(value)
+                .map(|value| record([("value", Value::Int(value))]))
+                .map_err(|_| OsError::new(OsErrorKind::Invalid, alloc::format!("{name}: register value {value} is beyond an int")))
         } else {
             let value = whole(args, 3, name)?;
             unsafe {
@@ -189,7 +191,7 @@ impl Devices {
         let mut pending = self.pending.borrow_mut();
         if *pending & line.bit != 0 {
             *pending &= !line.bit;
-            return IoAnswer::Os(Ok(record([("irq", Value::Number(line.irq as f64))])));
+            return IoAnswer::Os(Ok(record([("irq", Value::Int(line.irq.into()))])));
         }
         self.waiting.borrow_mut().push(Waiter { irq: line.irq, site: site.clone(), key: String::from(key) });
         IoAnswer::ServiceDeferred
@@ -205,7 +207,7 @@ impl Devices {
             let before = waiting.len();
             waiting.retain(|w| {
                 if w.irq == line.irq {
-                    fired.push((w.site.clone(), w.key.clone(), record([("irq", Value::Number(line.irq as f64))])));
+                    fired.push((w.site.clone(), w.key.clone(), record([("irq", Value::Int(line.irq.into()))])));
                     false
                 } else {
                     true
@@ -224,8 +226,8 @@ fn record<const N: usize>(fields: [(&str, Value); N]) -> Value {
 }
 
 fn whole(args: &[Value], at: usize, name: &str) -> Result<u64, OsError> {
-    match args.get(at) {
-        Some(Value::Number(n)) if *n >= 0.0 && *n == (*n as u64) as f64 => Ok(*n as u64),
+    match args.get(at).and_then(Value::as_int) {
+        Some(n) if n >= 0 => Ok(n as u64),
         _ => Err(OsError::new(OsErrorKind::Invalid, alloc::format!("{name}: argument {at} is not a whole number"))),
     }
 }

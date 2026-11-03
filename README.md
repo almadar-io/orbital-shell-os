@@ -8,7 +8,7 @@
 
 </div>
 
-<p align="center"><sub>Part of <a href="https://github.com/almadar-io/orb"><b>Orb</b></a>: the language where the rule is the program. <a href="https://orb.almadar.io">orb.almadar.io</a></sub></p>
+<p align="center"><sub>Part of <a href="https://github.com/almadar-io/orb"><b>Orb</b></a>: a programming language of composable state machines. <a href="https://orb.almadar.io">orb.almadar.io</a></sub></p>
 
 `orb compile --shell os` runs this crate as the `orb-shell-os` program. It copies the `sel4-root-task` project template and embeds the resolved program (`program.orb`) and the language bundle (`language.json`) in it. The root task hosts the `orbital-core` kernel on seL4 and answers the kernel's asks.
 

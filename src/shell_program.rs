@@ -143,6 +143,7 @@ mod tests {
             ir_version: IR_VERSION,
             module: OirModule::new("echo", "1.0.0"),
             resolved,
+            lazy: Vec::new(),
             served: None,
             source_path: None,
             write: Default::default(),
